@@ -20,6 +20,7 @@ SPDX-License-Identifier: Apache-2.0
 package logpipe
 
 import (
+	"context"
 	"github.com/cloudnative-pg/machinery/pkg/log"
 )
 
@@ -29,7 +30,7 @@ const (
 
 // RecordWriter is the interface
 type RecordWriter interface {
-	Write(r NamedRecord)
+	Write(ctx context.Context, r NamedRecord)
 }
 
 // LogRecordWriter implements the `RecordWriter` interface writing to the
@@ -37,6 +38,6 @@ type RecordWriter interface {
 type LogRecordWriter struct{}
 
 // Write writes the PostgreSQL log record to the instance manager logger
-func (writer *LogRecordWriter) Write(record NamedRecord) {
-	log.WithName(record.GetName()).Info(logRecordKey, logRecordKey, record)
+func (writer *LogRecordWriter) Write(ctx context.Context, record NamedRecord) {
+	log.FromContext(ctx).WithName(record.GetName()).Info(logRecordKey, logRecordKey, record)
 }

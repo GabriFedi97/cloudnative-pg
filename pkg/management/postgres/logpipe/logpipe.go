@@ -201,7 +201,7 @@ func (p *LogPipe) streamLogFromCSVFile(ctx context.Context, inputFile io.Reader,
 		err.Fields = content
 		return err
 	}
-	writer.Write(p.record.FromCSV(content))
+	writer.Write(ctx, p.record.FromCSV(content))
 
 reader:
 	for {
@@ -234,7 +234,7 @@ reader:
 			}
 		}
 
-		writer.Write(p.record.FromCSV(content))
+		writer.Write(ctx, p.record.FromCSV(content))
 	}
 
 	return nil
