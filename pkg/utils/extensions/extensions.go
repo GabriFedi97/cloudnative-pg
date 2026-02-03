@@ -27,13 +27,13 @@ import (
 	apiv1 "github.com/cloudnative-pg/cloudnative-pg/api/v1"
 )
 
-// ResolveFromCatalog returns a list of requested Extensions from a Catalog for a given
+// Resolve returns a list of requested Extensions from a Catalog for a given
 // Postgres major version.
 // If present, extension entries present in the catalog are always used as a starting base.
 // If additional configuration is passed via `cluster.Spec.PostgresConfiguration.Extensions`
 // for an extension that's already defined in the catalog, the values defined in the Cluster
 // take precedence.
-func ResolveFromCatalog(
+func Resolve(
 	cluster *apiv1.Cluster,
 	catalog apiv1.GenericImageCatalog,
 	requestedMajorVersion int,
@@ -42,8 +42,9 @@ func ResolveFromCatalog(
 	resolvedExtensions := make([]apiv1.ExtensionConfiguration, 0, len(requestedExtensions))
 
 	// Build a map of extensions coming from the catalog
-	catalogExtensionsMap := make(map[string]apiv1.ExtensionConfiguration)
+	var catalogExtensionsMap map[string]apiv1.ExtensionConfiguration
 	if extensions, ok := catalog.GetSpec().FindExtensionsForMajor(requestedMajorVersion); ok {
+		catalogExtensionsMap = make(map[string]apiv1.ExtensionConfiguration, len(extensions))
 		for _, extension := range extensions {
 			catalogExtensionsMap[extension.Name] = extension
 		}
@@ -75,16 +76,15 @@ func ResolveFromCatalog(
 			)
 		}
 
-		var resultExtension apiv1.ExtensionConfiguration
-		if found {
-			// Found the extension in the catalog, so let's use the catalog entry as a base
-			// and eventually override it with Cluster Spec values
-			resultExtension = catalogExtension
-		} else {
+		if !found {
 			// No catalog entry, rely fully on the Cluster Spec
 			resolvedExtensions = append(resolvedExtensions, extension)
 			continue
 		}
+
+		// Let's use the catalog entry as a base
+		// and eventually override it with Cluster Spec values
+		resultExtension := catalogExtension
 
 		// Apply the Cluster Spec overrides
 		if extension.ImageVolumeSource.Reference != "" {

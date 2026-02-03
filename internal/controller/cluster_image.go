@@ -194,7 +194,7 @@ func (r *ClusterReconciler) getRequestedImageInfo(
 		return apiv1.ImageInfo{}, fmt.Errorf("selected major version is not available in the catalog")
 	}
 
-	exts, err := extensions.ResolveFromCatalog(cluster, catalog, requestedMajorVersion)
+	exts, err := extensions.Resolve(cluster, catalog, requestedMajorVersion)
 	if err != nil {
 		return apiv1.ImageInfo{}, fmt.Errorf("cannot retrieve extensions for image %s: %w", catalogImage, err)
 	}
